@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>The Time Capsule | Mobile Review</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700;800&family=Caveat:wght@500;700&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* === THE TIME CAPSULE (LOFI MOBILE THEME) === */
+        :root {
+            --bg-lofi: #1A1625;      
+            --bg-panel: #262134;     
+            --bg-paper: #EAE0C8;     
+            --accent-amber: #D49A6A; 
+            --accent-matcha: #7C9082;
+            --accent-rose: #C77B84;  
+            --text-main: #E6DECE;    
+            --text-dark: #2C2825;    
+            --text-muted: #8C7B99;   
+            --border-soft: rgba(234, 224, 200, 0.1);
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #000; /* Outer background to frame the mobile app on desktop */
+            color: var(--text-main);
+            display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .font-ui { font-family: 'Quicksand', sans-serif; }
+        .font-handwriting { font-family: 'Caveat', cursive; }
+        .font-code { font-family: 'JetBrains Mono', monospace; }
+
+        /* Mobile App Container Frame */
+        #mobile-app {
+            width: 100%; max-width: 430px; /* iPhone Pro Max width approx */
+            height: 100vh; max-height: 932px;
+            background-color: var(--bg-lofi);
+            position: relative; display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 0 50px rgba(212, 154, 106, 0.15);
+            background-image: radial-gradient(circle at 50% 10%, rgba(212, 154, 106, 0.05) 0%, transparent 60%);
+        }
+
+        /* Layout */
+        header { flex-shrink: 0; background: rgba(26, 22, 37, 0.95); backdrop-filter: blur(10px); z-index: 50; border-bottom: 1px solid var(--border-soft); }
+        main { flex-grow: 1; overflow-y: auto; padding: 1.5rem; position: relative; }
+        footer { flex-shrink: 0; padding: 1rem; background: var(--bg-panel); border-top: 1px solid var(--border-soft); z-index: 50; }
+
+        /* Progress Bar */
+        .progress-track { width: 100%; height: 6px; background: rgba(0,0,0,0.3); border-radius: 3px; overflow: hidden; margin-top: 15px; }
+        .progress-fill { height: 100%; background: var(--accent-amber); transition: width 0.3s ease; box-shadow: 0 0 8px rgba(212, 154, 106, 0.6); }
+
+        /* Cards & Buttons */
+        .question-card { background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: 16px; padding: 1.5rem; animation: slideIn 0.3s ease forwards; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); }
+        .opt-btn { width: 100%; text-align: left; background: var(--bg-lofi); border: 1px solid var(--border-soft); padding: 1.2rem 1rem; border-radius: 8px; margin-bottom: 0.75rem; font-family: 'Quicksand', sans-serif; font-weight: 600; font-size: 1.05rem; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; }
+        .opt-btn:active { transform: scale(0.98); }
+        .opt-btn.selected-correct { border-color: var(--accent-matcha); background: rgba(124, 144, 130, 0.15); color: var(--accent-matcha); }
+        .opt-btn.selected-error { border-color: var(--accent-rose); background: rgba(199, 123, 132, 0.15); color: var(--accent-rose); }
+
+        .btn-primary { width: 100%; background: var(--accent-amber); color: var(--bg-lofi); padding: 1rem; border-radius: 8px; font-family: 'Quicksand', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; text-align: center; border: none; transition: all 0.2s; box-shadow: 0 4px 15px rgba(212, 154, 106, 0.2); }
+        .btn-primary:active { background: #b88358; transform: scale(0.96); }
+
+        /* Input specific (Torn Paper Style) */
+        .type-input { width: 100%; background: var(--bg-paper); border: 1px solid var(--accent-amber); color: var(--text-dark); padding: 1.2rem; border-radius: 4px; font-family: 'Caveat', cursive; text-align: center; margin-bottom: 1rem; font-size: 1.8rem; font-weight: bold; box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);}
+        .type-input:focus { outline: none; box-shadow: inset 0 2px 10px rgba(0,0,0,0.1), 0 0 0 3px rgba(212, 154, 106, 0.3); }
+        .type-input.error { border-color: var(--accent-rose); color: var(--accent-rose); animation: shake 0.4s; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+        /* Confetti Canvas */
+        #confetti { position: absolute; inset: 0; pointer-events: none; z-index: 100; }
+        
+        /* Utility */
+        .hide { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div id="mobile-app">
+        <!-- Header -->
+        <header class="p-5 flex flex-col">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-[var(--accent-amber)]/20 border border-[var(--accent-amber)]/50 flex items-center justify-center"><i class="fas fa-hourglass-half text-[var(--accent-amber)]"></i></div>
+                    <div>
+                        <h1 class="font-ui font-bold text-lg leading-tight text-white">Memory Log</h1>
+                        <p class="text-[10px] text-[var(--text-muted)] font-ui uppercase tracking-widest font-bold">Review Protocol</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span id="q-counter" class="text-xs font-ui text-[var(--accent-amber)] font-bold tracking-widest bg-[var(--accent-amber)]/10 px-2 py-1 rounded">01/15</span>
+                </div>
+            </div>
+            <div class="progress-track">
+                <div id="progress" class="progress-fill" style="width: 0%;"></div>
+            </div>
+        </header>
+
+        <!-- Main Content (Exercises) -->
+        <main id="app-main" class="flex flex-col justify-center">
+            
+            <!-- Welcome Screen -->
+            <div id="screen-welcome" class="text-center question-card border-t-2 border-[var(--accent-amber)]">
+                <div class="w-20 h-20 bg-[var(--bg-lofi)] rounded-full flex items-center justify-center mx-auto mb-6 border border-[var(--border-soft)] shadow-inner">
+                    <i class="fas fa-book-open text-3xl text-[var(--accent-amber)]"></i>
+                </div>
+                <h2 class="text-2xl font-ui font-bold mb-3 text-white">Journal Sync</h2>
+                <p class="text-[15px] text-[var(--text-muted)] mb-8 leading-relaxed font-inter">Review your notes. Master the Present Perfect and organize your life experiences perfectly.</p>
+                <div class="text-left bg-[var(--bg-lofi)] p-4 rounded-lg mb-8 border border-[var(--border-soft)]">
+                    <p class="text-xs font-ui text-[var(--accent-matcha)] font-bold tracking-wide"><i class="fas fa-check-circle mr-2"></i> Clean: "I have traveled."</p>
+                    <p class="text-xs font-ui text-[var(--accent-rose)] mt-3 font-bold tracking-wide"><i class="fas fa-times-circle mr-2"></i> Bug: "I traveled." (No time)</p>
+                </div>
+                <button onclick="startGame()" class="btn-primary">Unlock Pages</button>
+            </div>
+
+            <!-- Quiz Screen -->
+            <div id="screen-quiz" class="hide flex flex-col justify-center h-full">
+                <!-- Injected via JS -->
+            </div>
+
+            <!-- Result Screen -->
+            <div id="screen-result" class="hide text-center question-card border-t-2 border-[var(--accent-matcha)]">
+                <div class="w-24 h-24 bg-[var(--accent-matcha)]/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-[var(--accent-matcha)]/50 shadow-[0_0_30px_rgba(124,144,130,0.3)]">
+                    <i class="fas fa-lock text-5xl text-[var(--accent-matcha)]"></i>
+                </div>
+                <h2 class="text-3xl font-ui font-bold text-white mb-2">Vault Sealed</h2>
+                <p class="text-[15px] text-[var(--text-muted)] mb-8">You have successfully organized 15 memory logs without L1 interference.</p>
+                
+                <div class="bg-[var(--bg-lofi)] p-6 rounded-xl border border-[var(--border-soft)] mb-8">
+                    <p class="text-[11px] uppercase font-bold text-[var(--text-muted)] tracking-widest font-ui mb-2">Clarity Rate</p>
+                    <p id="final-score" class="text-5xl font-code font-bold text-[var(--accent-amber)]">100%</p>
+                </div>
+
+                <p class="text-sm text-[var(--accent-amber)] mb-6 font-handwriting text-2xl">"Experiences properly logged."</p>
+            </div>
+
+        </main>
+
+        <canvas id="confetti"></canvas>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const exercises = [
+            { type: 'ab', context: 'Life Experience', bug: 'I traveled to Japan.', clean: 'I have traveled to Japan.' },
+            { type: 'ab', context: 'Bucket List', bug: 'He never saw the Northern Lights.', clean: 'He has never seen the Northern Lights.' },
+            { type: 'input', context: 'Memory Fragment', corrupted: '[never / I / have / swum] with sharks.', expected: 'I have never swum', hint: 'Reorder the words' },
+            { type: 'ab', context: 'Interview Question', bug: 'Did you ever eat sushi?', clean: 'Have you ever eaten sushi?' },
+            { type: 'ab', context: 'Pending Task', bug: 'He didn\'t finish the report yet.', clean: 'He hasn\'t finished the report yet.' },
+            { type: 'input', context: 'Completed Task', corrupted: 'I [have / eaten / already] exotic food.', expected: 'I have already eaten', hint: 'Type the correct order' },
+            { type: 'ab', context: 'Travel Log', bug: 'We went to Paris. (No specific time)', clean: 'We have been to Paris.' },
+            { type: 'input', context: 'Extreme Adventure', corrupted: '[flown / in a helicopter / have / I]', expected: 'I have flown in a helicopter', hint: 'Type the full phrase' },
+            { type: 'ab', context: 'Scary Memory', bug: 'Did you ever see a ghost?', clean: 'Have you ever seen a ghost?' },
+            { type: 'input', context: 'Booking Status', corrupted: '[not / booked / I / have] the hotel yet.', expected: 'I have not booked', hint: 'Type the negative Present Perfect' },
+            { type: 'ab', context: 'Luggage Status', bug: 'I already have packed my bags.', clean: 'I have already packed my bags.' },
+            { type: 'ab', context: 'Phobia Check', bug: 'She has ever scuba dived.', clean: 'She has never scuba dived.' },
+            { type: 'input', context: 'Medical History', corrupted: '[broken / you / a bone / have / ever]?', expected: 'Have you ever broken a bone', hint: 'Type the question (no ?)' },
+            { type: 'ab', context: 'VIP Encounter', bug: 'I met a celebrity. (Sometime in my life)', clean: 'I have met a celebrity.' },
+            { type: 'input', context: 'Life Goals', corrupted: '[finished / my bucket list / haven\'t / I] yet.', expected: 'I haven\'t finished my bucket list', hint: 'Type the sentence' }
+        ];
+
+        // --- STATE ---
+        let state = { current: 0, errors: 0 };
+
+        // --- LOGIC ---
+        function startGame() {
+            document.getElementById('screen-welcome').classList.add('hide');
+            document.getElementById('screen-quiz').classList.remove('hide');
+            renderQuestion();
+        }
+
+        function updateProgress() {
+            const perc = (state.current / exercises.length) * 100;
+            document.getElementById('progress').style.width = perc + '%';
+            document.getElementById('q-counter').innerText = `${String(state.current + 1).padStart(2, '0')}/${exercises.length}`;
+        }
+
+        function shuffleArray(array) {
+            let curId = array.length;
+            while (0 !== curId) { let randId = Math.floor(Math.random() * curId); curId -= 1; let tmp = array[curId]; array[curId] = array[randId]; array[randId] = tmp; }
+            return array;
+        }
+
+        function renderQuestion() {
+            if (state.current >= exercises.length) return endHomework();
+            
+            updateProgress();
+            const ex = exercises[state.current];
+            const container = document.getElementById('screen-quiz');
+            
+            let html = `
+                <div class="question-card" id="q-card">
+                    <p class="text-[10px] text-[var(--accent-amber)] font-bold uppercase tracking-widest font-ui mb-5 bg-[var(--bg-lofi)] inline-block px-3 py-1 rounded border border-[var(--border-soft)]"><i class="fas fa-bookmark mr-2"></i>${ex.context}</p>
+            `;
+
+            if (ex.type === 'ab') {
+                const opts = shuffleArray([
+                    { text: ex.clean, isCorrect: true },
+                    { text: ex.bug, isCorrect: false }
+                ]);
+
+                html += `
+                    <h2 class="text-xl font-ui font-bold text-white mb-6 leading-snug">Select the correct grammar syntax:</h2>
+                    <div class="space-y-3" id="ab-opts">
+                        <button onclick="handleAB(this, ${opts[0].isCorrect})" class="opt-btn"><span>${opts[0].text}</span><i class="fas fa-circle text-[var(--border-soft)] text-xs icon-status"></i></button>
+                        <button onclick="handleAB(this, ${opts[1].isCorrect})" class="opt-btn"><span>${opts[1].text}</span><i class="fas fa-circle text-[var(--border-soft)] text-xs icon-status"></i></button>
+                    </div>
+                `;
+            } else if (ex.type === 'input') {
+                html += `
+                    <h2 class="text-xl font-ui font-bold text-white mb-4 leading-snug">Organize the memory string:</h2>
+                    <p class="text-[var(--accent-rose)] font-code text-[13px] mb-6 bg-[var(--bg-lofi)] p-4 rounded text-center border border-[var(--border-soft)] shadow-inner leading-relaxed">${ex.corrupted}</p>
+                    <input type="text" id="type-ans" class="type-input" placeholder="${ex.hint}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                    <button id="btn-submit" onclick="handleInput('${esc(ex.expected)}')" class="btn-primary mt-2">Log Entry</button>
+                `;
+            }
+
+            html += `</div>`;
+            container.innerHTML = html;
+
+            if (ex.type === 'input') {
+                const inputEl = document.getElementById('type-ans');
+                inputEl.focus();
+                inputEl.addEventListener('keypress', function(e) { if (e.key === 'Enter') document.getElementById('btn-submit').click(); });
+            }
+        }
+
+        function handleAB(btn, isCorrect) {
+            // lock buttons
+            const buttons = document.getElementById('ab-opts').querySelectorAll('button');
+            buttons.forEach(b => { b.onclick = null; b.style.opacity = '0.6'; });
+            btn.style.opacity = '1';
+
+            const icon = btn.querySelector('.icon-status');
+
+            if (isCorrect) {
+                btn.classList.add('selected-correct');
+                icon.className = 'fas fa-check-circle text-[var(--accent-matcha)] text-xl icon-status drop-shadow-[0_0_5px_rgba(124,144,130,0.5)]';
+                setTimeout(nextQuestion, 700);
+            } else {
+                btn.classList.add('selected-error');
+                icon.className = 'fas fa-times-circle text-[var(--accent-rose)] text-xl icon-status';
+                state.errors++;
+                
+                // Show the correct one
+                buttons.forEach(b => {
+                    if(!b.classList.contains('selected-error')) {
+                        b.classList.add('selected-correct'); b.style.opacity = '1';
+                        b.querySelector('.icon-status').className = 'fas fa-check-circle text-[var(--accent-matcha)] text-xl icon-status';
+                    }
+                });
+                setTimeout(nextQuestion, 1800);
+            }
+        }
+
+        function handleInput(expected) {
+            const input = document.getElementById('type-ans');
+            const val = input.value.trim().toLowerCase();
+            const btn = document.getElementById('btn-submit');
+
+            // Handle acceptable variations for contracted/full forms in input
+            const expectedLower = expected.toLowerCase();
+            const isMatch = (val === expectedLower) || 
+                            (expectedLower === "i have not booked" && val === "i haven't booked") ||
+                            (expectedLower === "i haven't finished my bucket list" && val === "i have not finished my bucket list") ||
+                            (expectedLower === "have you ever broken a bone" && val === "have you ever broken a bone?");
+
+            if (isMatch) {
+                input.style.borderColor = 'var(--accent-matcha)';
+                input.style.color = 'var(--accent-matcha)';
+                input.style.boxShadow = 'inset 0 0 10px rgba(124, 144, 130, 0.2)';
+                btn.style.background = 'var(--accent-matcha)';
+                btn.innerHTML = '<i class="fas fa-check"></i> Verified';
+                setTimeout(nextQuestion, 700);
+            } else {
+                input.classList.remove('error');
+                void input.offsetWidth; // trigger reflow
+                input.classList.add('error');
+                input.value = '';
+                input.placeholder = "Try again!";
+                state.errors++;
+            }
+        }
+
+        function nextQuestion() {
+            state.current++;
+            renderQuestion();
+        }
+
+        function endHomework() {
+            document.getElementById('screen-quiz').classList.add('hide');
+            document.getElementById('screen-result').classList.remove('hide');
+            
+            document.getElementById('progress').style.width = '100%';
+            document.getElementById('q-counter').innerText = 'DONE';
+
+            const accuracy = Math.max(0, 100 - (state.errors * 5));
+            const scoreEl = document.getElementById('final-score');
+            scoreEl.innerText = `${accuracy}%`;
+            
+            if(accuracy < 70) {
+                scoreEl.className = "text-5xl font-code font-bold text-[var(--accent-rose)]";
+                document.querySelector('.fa-lock').className = "fas fa-lock-open text-5xl text-[var(--accent-rose)]";
+                document.querySelector('.fa-lock').parentElement.className = "w-24 h-24 bg-[var(--accent-rose)]/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-[var(--accent-rose)]/50 shadow-[0_0_30px_rgba(199,123,132,0.3)]";
+            }
+            else if(accuracy === 100) {
+                scoreEl.className = "text-5xl font-code font-bold text-[var(--accent-matcha)]";
+            }
+
+            shootConfetti();
+        }
+
+        // --- VISUAL EFFECTS ---
+        function shootConfetti() {
+            const cCanvas = document.getElementById('confetti'); const cCtx = cCanvas.getContext('2d');
+            cCanvas.width = document.getElementById('mobile-app').offsetWidth; cCanvas.height = document.getElementById('mobile-app').offsetHeight;
+            const pieces = []; const colors = ['#D49A6A', '#7C9082', '#C77B84', '#EAE0C8']; 
+            for(let i=0; i<50; i++) pieces.push({ x: cCanvas.width/2, y: cCanvas.height/2, vx: (Math.random()-0.5)*15, vy: (Math.random()-1)*15-5, size: Math.random()*6+3, color: colors[Math.floor(Math.random()*colors.length)], rot: Math.random()*360, rotSpeed: (Math.random()-0.5)*10 });
+            function animateC() {
+                cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height); let active = false;
+                pieces.forEach(p => {
+                    p.x += p.vx; p.y += p.vy; p.vy += 0.5; p.rot += p.rotSpeed; if(p.y < cCanvas.height) active = true;
+                    cCtx.save(); cCtx.translate(p.x, p.y); cCtx.rotate(p.rot*Math.PI/180); cCtx.fillStyle = p.color; 
+                    cCtx.fillRect(-p.size/2, -p.size/2, p.size, p.size); cCtx.restore();
+                });
+                if(active) requestAnimationFrame(animateC); else cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height);
+            }
+            animateC();
+        }
+    </script>
+</body>
+</html>
